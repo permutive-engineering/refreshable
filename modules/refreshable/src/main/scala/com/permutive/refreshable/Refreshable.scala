@@ -55,6 +55,8 @@ abstract class Refreshable[F[_]: Functor, A] { self =>
     */
   def restart: F[Boolean]
 
+  def triggerRefresh: F[Unit]
+
   def map[B](f: A => B): Refreshable[F, B] = new Refreshable[F, B] {
 
     override def get: F[CachedValue[B]] = self.get.map(_.map(f))
@@ -64,6 +66,8 @@ abstract class Refreshable[F[_]: Functor, A] { self =>
     override def cancel: F[Boolean] = self.cancel
 
     override def restart: F[Boolean] = self.restart
+
+    override def triggerRefresh: F[Unit] = self.triggerRefresh
 
   }
 
@@ -78,6 +82,8 @@ abstract class Refreshable[F[_]: Functor, A] { self =>
       override def cancel: G[Boolean] = fk(self.cancel)
 
       override def restart: G[Boolean] = fk(self.restart)
+
+      override def triggerRefresh: G[Unit] = fk(self.triggerRefresh)
 
     }
 
@@ -229,7 +235,7 @@ object Refreshable {
                         Ref.of[F, Option[Fiber[F, Throwable, Unit]]](None)
                       )
         _ <- runBackground(store, fiberStore)
-      } yield RefreshableImpl(store, fiberStore, makeFiber(store))
+      } yield RefreshableImpl(store, fa.flatMap(store.set), fiberStore, makeFiber(store))
     }
 
     private def storeValue(
@@ -323,6 +329,7 @@ object Refreshable {
 
   private class RefreshableImpl[F[_]: Concurrent, A] private (
       val store: SignallingRef[F, CachedValue[A]],
+      val trigger: F[Unit],
       val fiberStore: Ref[F, Option[Fiber[F, Throwable, Unit]]],
       val makeFiber: Deferred[F, Unit] => F[Fiber[F, Throwable, Unit]]
   ) extends Refreshable[F, A] {
@@ -338,6 +345,8 @@ object Refreshable {
           .update(v => CachedValue.Cancelled(v.value))
           .as(true))
     }.flatten.uncancelable
+
+    override val triggerRefresh: F[Unit] = trigger
 
     override val restart: F[Boolean] =
       Concurrent[F].deferred[Unit].flatMap { wait =>
@@ -356,9 +365,10 @@ object Refreshable {
 
     def apply[F[_]: Concurrent, A](
         store: SignallingRef[F, CachedValue[A]],
+        trigger: F[Unit],
         fiberStore: Ref[F, Option[Fiber[F, Throwable, Unit]]],
         makeFiber: Deferred[F, Unit] => F[Fiber[F, Throwable, Unit]]
-    ): RefreshableImpl[F, A] = new RefreshableImpl(store, fiberStore, makeFiber)
+    ): RefreshableImpl[F, A] = new RefreshableImpl(store, trigger, fiberStore, makeFiber)
 
   }
 
