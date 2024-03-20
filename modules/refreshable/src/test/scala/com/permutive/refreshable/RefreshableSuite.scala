@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Permutive
+ * Copyright 2022-2024 Permutive Ltd. <https://permutive.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,15 @@
 
 package com.permutive.refreshable
 
+import scala.concurrent.duration._
+
 import cats.arrow.FunctionK
 import cats.effect._
 import cats.effect.testkit.TestControl
 import cats.syntax.all._
+
 import munit.CatsEffectSuite
 import retry._
-
-import scala.concurrent.duration._
 
 class RefreshableSuite extends CatsEffectSuite {
 
@@ -54,7 +55,7 @@ class RefreshableSuite extends CatsEffectSuite {
           .resource[Int](
             // Initial evaluation succeeds but first refresh will fail and need to be retried
             refresh = state.getAndUpdate(_ + 1).flatTap { curr =>
-              IO.raiseError(Boom).whenA(curr == 1)
+              IO.raiseError(Boom).whenA(curr === 1)
             },
             cacheDuration = _ => cacheTTL,
             onRefreshFailure = { case _ => IO.unit },
@@ -306,8 +307,7 @@ class RefreshableSuite extends CatsEffectSuite {
               cacheDuration = _ => 2.seconds,
               onRefreshFailure = { case _ => IO.unit },
               onExhaustedRetries = { case _ => IO.unit },
-              onNewValue =
-                Some((next: Int, d: FiniteDuration) => result.set(next -> d)),
+              onNewValue = Some((next: Int, d: FiniteDuration) => result.set(next -> d)),
               defaultValue = None,
               retryPolicy = None
             )
@@ -373,9 +373,7 @@ class RefreshableSuite extends CatsEffectSuite {
             onExhaustedRetries = { case _ =>
               IO.unit
             },
-            combine = Some((oldV: CachedValue[Int], newV: CachedValue[Int]) =>
-              IO(oldV.value + newV.value)
-            )
+            combine = Some((oldV: CachedValue[Int], newV: CachedValue[Int]) => IO(oldV.value + newV.value))
           )
           .use { refreshable =>
             IO.sleep(3.seconds) >> refreshable.value.assertEquals(2)
@@ -431,6 +429,7 @@ class RefreshableSuite extends CatsEffectSuite {
 
       retryPolicy.fold(b4)(v => b4.retryPolicy(v)).resource
     }
+
   }
 
   object Updates extends RefreshableFactory {
@@ -462,6 +461,7 @@ class RefreshableSuite extends CatsEffectSuite {
       retryPolicy.fold(b4)(v => b4.retryPolicy(v)).resource
 
     }
+
   }
 
   object MapK extends RefreshableFactory {
@@ -479,16 +479,10 @@ class RefreshableSuite extends CatsEffectSuite {
         retryPolicy: Option[RetryPolicy[IO]] = None
     ): Resource[IO, Refreshable[IO, A]] = Default
       .resource(
-        refresh,
-        cacheDuration,
-        onRefreshFailure,
-        onExhaustedRetries,
-        onNewValue,
-        combine,
-        defaultValue,
-        retryPolicy
+        refresh, cacheDuration, onRefreshFailure, onExhaustedRetries, onNewValue, combine, defaultValue, retryPolicy
       )
       .map(_.mapK(FunctionK.id[IO]))
+
   }
 
   trait RefreshableFactory {
