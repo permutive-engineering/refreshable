@@ -30,7 +30,7 @@ import fs2.Stream
 import fs2.concurrent.SignallingRef
 import retry._
 
-abstract class Refreshable[F[_]: Functor, A] { self =>
+sealed abstract class Refreshable[F[_]: Functor, A] { self =>
 
   /** Get the unwrapped value of `A` */
   def value: F[A] = get.map(_.value)
@@ -260,7 +260,7 @@ object Refreshable {
           .handleErrorWith(th => store.set(CachedValue.Error(oldValue.value, th)))
       }
 
-    protected def makeFiber(
+    private def makeFiber(
         store: Ref[F, CachedValue[A]]
     )(wait: Deferred[F, Unit]) = (wait.get >> store.get
       .flatMap(a =>
@@ -275,7 +275,7 @@ object Refreshable {
         ).handleErrorWith(th => exhaustedRetriesCallback.lift(th).sequence_)
       )).start
 
-    protected def runBackground(
+    private def runBackground(
         store: Ref[F, CachedValue[A]],
         fiberStore: Ref[F, Option[Fiber[F, Throwable, Unit]]]
     ): Resource[F, Unit] =
@@ -327,7 +327,7 @@ object Refreshable {
 
   }
 
-  private class RefreshableImpl[F[_]: Concurrent, A] private (
+  final private class RefreshableImpl[F[_]: Concurrent, A] private (
       val store: SignallingRef[F, CachedValue[A]],
       val trigger: F[Unit],
       val fiberStore: Ref[F, Option[Fiber[F, Throwable, Unit]]],
