@@ -12,7 +12,7 @@ lazy val documentation = project
   .dependsOn(refreshable)
 
 lazy val refreshable = module
-  .settings(libraryDependencies += "org.typelevel" %% "cats-core" % "2.10.0")
+  .settings(libraryDependencies += "org.typelevel" %% "cats-core" % "2.13.0")
   .settings(libraryDependencies += "org.typelevel" %% "cats-effect" % "3.5.4")
   .settings(libraryDependencies += "co.fs2" %% "fs2-core" % "3.12.0")
   .settings(libraryDependencies += "com.github.cb372" %% "cats-retry" % "3.1.3")
