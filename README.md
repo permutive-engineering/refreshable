@@ -11,7 +11,7 @@ Offers a `Refreshable` type that operates like a cache of size 1 with a backgrou
 Add the following line to your `build.sbt` file:
 
 ```sbt
-libraryDependencies += "com.permutive" %% "refreshable" % "2.1.0"
+libraryDependencies += "com.permutive" %% "refreshable" % "2.1.1"
 ```
 
 The library is published for Scala versions: `2.12`, `2.13` and `3`.
