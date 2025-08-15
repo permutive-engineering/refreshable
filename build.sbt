@@ -18,4 +18,4 @@ lazy val refreshable = module
   .settings(libraryDependencies += "com.github.cb372" %% "cats-retry" % "3.1.3")
   .settings(libraryDependencies += "org.scalameta" %% "munit" % "1.1.1" % Test)
   .settings(libraryDependencies += "org.typelevel" %% "munit-cats-effect" % "2.1.0" % Test)
-  .settings(libraryDependencies += "org.typelevel" %% "cats-effect-testkit" % "3.6.2" % Test)
+  .settings(libraryDependencies += "org.typelevel" %% "cats-effect-testkit" % "3.6.3" % Test)
