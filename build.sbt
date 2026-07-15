@@ -1,5 +1,5 @@
-ThisBuild / scalaVersion           := "2.13.16"
-ThisBuild / crossScalaVersions     := Seq("2.12.20", "2.13.16", "3.3.6")
+ThisBuild / scalaVersion           := "2.13.18"
+ThisBuild / crossScalaVersions     := Seq("2.12.21", "2.13.18", "3.3.8")
 ThisBuild / organization           := "com.permutive"
 ThisBuild / versionPolicyIntention := Compatibility.BinaryAndSourceCompatible
 
@@ -13,9 +13,9 @@ lazy val documentation = project
 
 lazy val refreshable = module
   .settings(libraryDependencies += "org.typelevel" %% "cats-core" % "2.13.0")
-  .settings(libraryDependencies += "org.typelevel" %% "cats-effect" % "3.6.2")
-  .settings(libraryDependencies += "co.fs2" %% "fs2-core" % "3.12.0")
+  .settings(libraryDependencies += "org.typelevel" %% "cats-effect" % "3.6.3")
+  .settings(libraryDependencies += "co.fs2" %% "fs2-core" % "3.12.2")
   .settings(libraryDependencies += "com.github.cb372" %% "cats-retry" % "3.1.3")
-  .settings(libraryDependencies += "org.scalameta" %% "munit" % "1.1.1" % Test)
-  .settings(libraryDependencies += "org.typelevel" %% "munit-cats-effect" % "2.1.0" % Test)
-  .settings(libraryDependencies += "org.typelevel" %% "cats-effect-testkit" % "3.6.2" % Test)
+  .settings(libraryDependencies += "org.scalameta" %% "munit" % "1.3.4" % Test)
+  .settings(libraryDependencies += "org.typelevel" %% "munit-cats-effect" % "2.2.0" % Test)
+  .settings(libraryDependencies += "org.typelevel" %% "cats-effect-testkit" % "3.6.3" % Test)
